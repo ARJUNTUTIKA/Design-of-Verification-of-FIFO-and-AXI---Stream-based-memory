@@ -1,0 +1,27 @@
+module axi_master #(parameter width=8,length=32)(
+  input clk,resetn,tready,
+  output reg tvalid,tlast,
+  output reg [width-1:0] tdata
+);
+  reg [$clog2(length)-1:0] count;
+
+  always@(posedge clk or posedge resetn) begin
+    if(resetn) begin 
+      tvalid<=0;
+      tdata<=0;
+      tlast<=0;
+      count<=0;
+    end
+    else begin
+      tvalid<=1; 
+      if(tready==1 && tlast!=1)begin 
+        tdata<=$random;
+        tlast<=(count==length);
+        if( count==length)
+          count<=0;
+        else
+          count<=count+1;
+      end
+    end
+  end
+endmodule
