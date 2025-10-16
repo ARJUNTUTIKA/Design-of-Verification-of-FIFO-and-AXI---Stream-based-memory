@@ -1,0 +1,35 @@
+module simple_top #(parameter width=8)(
+  input clk,
+  input resetn,
+  input wr_req
+);
+
+  // Internal AXI Stream signals
+  wire tvalid, tready, tlast;
+  wire [width-1:0] tdata;
+  wire full, empty;
+  
+  // AXI Master
+  axi_master master_inst (
+    .clk(clk),
+    .resetn(resetn),
+    .tvalid(tvalid),
+    .tdata(tdata),
+    .tlast(tlast),
+    .tready(tready)
+  );
+  
+  // FIFO Slave
+  memory fifo_inst (
+    .clk(clk),
+    .reset(resetn),
+    .tlast(tlast),
+    .tvalid(tvalid),
+    .tdata(tdata),
+    .full(full),
+    .empty(empty),
+    .tready(tready),
+    .wr_req(wr_req)
+  );
+
+endmodule
