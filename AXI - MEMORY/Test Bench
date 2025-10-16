@@ -1,0 +1,36 @@
+module tb;
+  parameter width=8;
+  reg clk, resetn, wr_req;
+  
+  simple_top t1(
+    .clk(clk),
+    .resetn(resetn),
+    .wr_req(wr_req)
+  ); 
+  initial begin
+    clk = 0;
+    forever #5 clk = ~clk;
+  end
+ 
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars;
+    resetn = 1;
+    wr_req = 1;
+    #10;
+    resetn = 0;
+    #80;  
+    repeat(10) begin
+      @(posedge clk);
+      wr_req = 1;
+      #10;
+      wr_req = 0;
+      #10;
+    end
+    wr_req = 1;
+    #60;
+    wr_req = 0;
+    #50;
+    $finish;
+  end
+endmodule
