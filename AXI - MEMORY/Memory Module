@@ -1,0 +1,32 @@
+module memory#(parameter width=8,length=16)(
+  input clk,reset,tvalid,tlast,wr_req,
+  input [width-1:0] tdata,
+  output full,empty,tready
+);
+  reg [$clog2(length)-1:0] wr_ptr;
+  reg [$clog2(length):0] count;  
+  reg [width-1:0] memory[length-1:0];
+
+  always@(posedge clk) begin
+    if(reset) begin   
+      for (integer i=0;i<length;i=i+1) memory[i]<=0;                        
+      count <= 5'd0;
+      wr_ptr <= 4'd0;
+    end
+    else if((tready && tvalid)&&(wr_req && !full))
+      begin
+        memory[wr_ptr]<=tdata;
+        if(wr_ptr==length) 
+          wr_ptr<=0;
+        else begin
+          wr_ptr<=wr_ptr+1;
+          count<=count+1;
+        end
+      end
+  end
+
+  assign full=(count==length);
+  assign empty=(count==5'd0);
+  assign tready=(count<length);
+  
+endmodule
