@@ -1,0 +1,36 @@
+//Testbench:
+module tb;
+  generator gen;
+  driver div;
+  mailbox mbx;
+  inter inf2();
+  SRAM u1(.clk(inf2.clk),.reset(inf2.reset),.rd_req(inf2.rd_req),.wr_req(inf2.wr_req),.data_in(inf2.data_in),.data_out(inf2.data_out),.power_off(inf2.power_off),.addr(inf2.addr));
+  initial inf2.clk=0;
+  always  #5 inf2.clk=~inf2.clk;
+  initial begin
+    $dumpfile("dump.vcd");
+   $dumpvars;
+    mbx=new();
+    gen=new();
+    div=new();
+    gen.mbx=mbx;
+    div.mbx=mbx;
+    div.inf1=inf2;
+    inf2.reset=1;
+    $display(inf2.reset);
+    #10;
+    inf2.reset=0;
+    $display(inf2.reset);
+    fork 
+      repeat(35) begin
+        gen.run();
+        div.run();
+      end
+      repeat (10) #10inf2.power_off=0;
+      #100 repeat (3)#10 inf2.power_off=1;
+      #140 inf2.power_off=0;
+    join
+    inf2.data_in=0;
+    #250 $finish;
+  end
+endmodule
