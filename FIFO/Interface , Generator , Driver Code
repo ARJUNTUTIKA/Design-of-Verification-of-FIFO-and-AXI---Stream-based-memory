@@ -1,0 +1,45 @@
+interface inter;
+  parameter width=8,depth=32;
+  logic clk,reset,rd_req,wr_req;
+  logic [width-1:0]data_in;
+  logic full,empty;
+  logic [width-1:0]data_out;
+endinterface
+
+//Transaction Class:
+class transaction;
+  parameter width=8;
+  rand bit [width-1:0]data_in;
+  rand bit rd_req,wr_req;
+  function void print(string name);
+    $display("[%s]\t:-\tdata_in=%0h\trd_req=%0b\twr_req=%0b",name,data_in,rd_req,wr_req);
+  endfunction
+  constraint req{(rd_req  != wr_req );}
+endclass
+
+//Generator:
+class generator;
+  transaction tx;
+  mailbox mbx;
+  task run();
+    tx=new();
+    assert(tx.randomize());
+    mbx.put(tx);
+    tx.print("Generated data");
+  endtask
+endclass
+
+//Driver:
+class driver;
+  transaction tx;
+  mailbox mbx;
+  virtual inter inf1;
+  task run();
+    mbx.get(tx);
+    tx.print("  drived data ");
+    @(posedge inf1.clk);
+    inf1.data_in = tx.data_in;
+    inf1.wr_req  = tx.wr_req;
+    inf1.rd_req  = tx.rd_req;
+  endtask
+endclass
